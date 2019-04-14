@@ -13,7 +13,8 @@ const toGroqParams = terms =>
     return acc
   }, {})
 
-export function createWeightedSearch(types, client) {
+export function createWeightedSearch(types, client, options = {}) {
+  const {filter, filterParams} = options
   const searchSpec = types.map(type => {
     return {
       typeName: type.name,
@@ -40,20 +41,22 @@ export function createWeightedSearch(types, client) {
     )
 
     const filters = [
-      '_type in $types',
+      '_type in $__types',
       opts.includeDrafts === false && `!(_id in path('drafts.**'))`,
-      ...constraints.map(constraint => `(${constraint.join('||')})`)
+      ...constraints.map(constraint => `(${constraint.join('||')})`),
+      filter ? `(${filter})` : ''
     ].filter(Boolean)
 
-    const query = `*[${filters.join('&&')}][0...$limit]{_type, _id, ...select(${selections.join(
+    const query = `*[${filters.join('&&')}][0...$__limit]{_type, _id, ...select(${selections.join(
       ',\n'
     )})}`
 
     return client.observable
       .fetch(query, {
         ...toGroqParams(terms),
-        types: searchSpec.map(spec => spec.typeName),
-        limit: 1000
+        __types: searchSpec.map(spec => spec.typeName),
+        __limit: 1000,
+        ...(filterParams || {})
       })
       .pipe(
         map(removeDupes),
