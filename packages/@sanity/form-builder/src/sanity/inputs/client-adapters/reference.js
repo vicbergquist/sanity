@@ -7,8 +7,8 @@ export function getPreviewSnapshot(value, referenceType) {
   return observeForPreview(value, referenceType).pipe(map(result => result.snapshot))
 }
 
-export function search(textTerm, referenceType) {
-  const doSearch = createWeightedSearch(referenceType.to, client)
+export function search(textTerm, referenceType, options) {
+  const doSearch = createWeightedSearch(referenceType.to, client, options)
   return doSearch(textTerm, {includeDrafts: false}).pipe(
     map(results => results.map(res => res.hit))
   )
