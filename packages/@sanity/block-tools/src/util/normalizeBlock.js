@@ -1,8 +1,9 @@
-import {isEqual} from 'lodash'
+import {flatten, isEqual} from 'lodash'
 import randomKey from './randomKey'
 
 // For a block with _type 'block' (text), join spans where possible
-export default function normalizeBlock(block) {
+export default function normalizeBlock(block, options = {}) {
+  const normalizeMarks = options.normalizeMarks || false
   let childIndex = 0
 
   // Initialize id
@@ -39,7 +40,53 @@ export default function normalizeBlock(block) {
   }
   block.children = block.children
     // eslint-disable-next-line complexity
+    .map(child => {
+      // Make sure spans are the way they're supposed to
+      if (child._type === 'span') {
+        // Initialize span marks array
+        if (!child.marks) {
+          child.marks = []
+        }
+        // If this has marks, and begins or ends with white space,
+        // put the whitespace in it's own span without any marks
+        const whitespace = child.text.match(/^\s+|\s+$/g)
+        if (normalizeMarks && whitespace && child.marks.length > 0) {
+          const newChilds = []
+          // eslint-disable-next-line max-depth
+          if (whitespace[1]) {
+            newChilds.push({
+              _type: 'span',
+              marks: [],
+              text: whitespace[1]
+            })
+          }
+          newChilds.push({
+            _type: 'span',
+            marks: child.marks,
+            text: child.text.replace(/^\s+|\s+$/g, '')
+          })
+          // eslint-disable-next-line max-depth
+          if (whitespace[0]) {
+            newChilds.push({
+              _type: 'span',
+              marks: [],
+              text: whitespace[0]
+            })
+          }
+          console.log('Normalizing marks')
+          return newChilds
+        }
+      }
+      return child
+    })
+  // Set key pattern on the children
+  block.children = flatten(block.children)
+  block.children = block.children
+    // eslint-disable-next-line complexity
     .filter((child, index) => {
+      if (index > 0 && index < block.children && child._type === 'span' && child.text === '') {
+        return false
+      }
       const previousChild = block.children[index - 1]
       const hasIdenticalMarksAsLastSpan =
         previousChild &&
@@ -57,36 +104,8 @@ export default function normalizeBlock(block) {
       }
       return child
     })
-    .map(child => {
-      // Set an incremental child key
-      child._key = `${block._key}${childIndex++}`
-      // Make sure spans are the way they're supposed to
-      if (child._type === 'span') {
-        // Initialize span marks array
-        if (!child.marks) {
-          child.marks = []
-        }
-        // If this has marks, and begins or ends with white space,
-        // put the whitespace in it's own span without any marks
-        const whitespace = child.text.match(/^\s+|\s+$/g)
-        if (whitespace && child.marks.length > 0) {
-          const newChilds = []
-          // eslint-disable-next-line max-depth
-          if (whitespace[1]) {
-            newChilds.push({_type: 'span', marks: [], text: whitespace[1]})
-          }
-          newChilds.push({
-            _type: 'span',
-            marks: child.marks,
-            text: child.text.replace(/^\s+|\s+$/g, '')
-          })
-          // eslint-disable-next-line max-depth
-          if (whitespace[0]) {
-            newChilds.push({_type: 'span', marks: [], text: whitespace[0]})
-          }
-          return newChilds
-        }
-      }
+    .map((child, index) => {
+      child._key = `${block._key}${index}`
       return child
     })
   return block

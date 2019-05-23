@@ -57,7 +57,7 @@ import FireFoxVoidNodePlugin from './plugins/FirefoxVoidNodePlugin'
 import FocusNoScrollPlugin from './plugins/FocusNoScrollPlugin'
 import ScrollAbsoluteTopBottomPlugin from './plugins/ScrollAbsoluteTopBottomPlugin'
 import ScrollToFocusWithDynamicHeightPreviewPlugin from './plugins/ScrollToFocusWithDynamicHeightPreviewPlugin'
-
+import UnmarkWhitespacePlugin from './plugins/UnmarkWhitespacePlugin'
 import BlockExtrasOverlay from './BlockExtrasOverlay'
 import BlockObject from './nodes/BlockObject'
 import ContentBlock from './nodes/ContentBlock'
@@ -164,7 +164,8 @@ export default class Editor extends React.Component<Props> {
       FireFoxVoidNodePlugin(),
       FocusNoScrollPlugin(props.scrollContainer),
       ScrollAbsoluteTopBottomPlugin(props.scrollContainer),
-      ScrollToFocusWithDynamicHeightPreviewPlugin(props.scrollContainer, scrollIntoView)
+      ScrollToFocusWithDynamicHeightPreviewPlugin(props.scrollContainer, scrollIntoView),
+      UnmarkWhitespacePlugin(props.type)
     ]
   }
 

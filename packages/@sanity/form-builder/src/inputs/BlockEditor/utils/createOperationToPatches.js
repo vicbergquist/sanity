@@ -1,6 +1,6 @@
 // @flow
 
-import {editorValueToBlocks} from '@sanity/block-tools'
+import {editorValueToBlocks, normalizeBlock} from '@sanity/block-tools'
 import {Operation, Range} from 'slate'
 import {get, isEqual} from 'lodash'
 import type {
@@ -168,7 +168,7 @@ export default function createOperationToPatches(
     if (formBuilderValue && formBuilderValue.length === 0) {
       return [set(editorValueToBlocks(afterValue.toJSON(VALUE_TO_JSON_OPTS), blockContentType), [])]
     }
-    const block = toBlock(afterValue, operation.path.get(0))
+    const block = normalizeBlock(toBlock(afterValue, operation.path.get(0)), {normalizeMarks: true})
     return [set(block, [{_key: block._key}])]
   }
 
