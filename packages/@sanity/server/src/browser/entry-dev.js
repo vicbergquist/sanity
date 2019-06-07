@@ -1,17 +1,13 @@
 // eslint-disable-next-line import/no-unassigned-import
 import 'symbol-observable'
+import {hot} from 'react-hot-loader/root'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Root from 'part:@sanity/base/sanity-root'
-import {AppContainer} from 'react-hot-loader'
 
-function render(RootComponent) {
-  ReactDOM.render(
-    <AppContainer>
-      <RootComponent />
-    </AppContainer>,
-    document.getElementById('sanity')
-  )
+function render(rootComponent) {
+  const RootComponent = hot(rootComponent)
+  ReactDOM.render(<RootComponent />, document.getElementById('sanity'))
 }
 
 render(Root)
